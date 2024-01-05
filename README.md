@@ -1,3 +1,5 @@
+[![Packagist](https://img.shields.io/packagist/v/bhanwarpsrathore/dropbox-api-php.svg)](https://packagist.org/packages/bhanwarpsrathore/dropbox-api-php)
+
 # Dropbox API PHP
 
 This is a PHP wrapper for [Dropbox's API](https://www.dropbox.com/developers/documentation/http/overview). It includes the following:

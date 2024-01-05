@@ -1,0 +1,26 @@
+{
+    "name": "bhanwarpsrathore/dropbox-api-php",
+    "description": "A PHP wrapper for Dropbox's HTTP API.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "dropbox"
+    ],
+    "homepage": "https://github.com/bhanwarpsrathore/dropbox-api-php",
+    "authors": [
+        {
+            "name": "Pradeep Singh",
+            "email": "bhanwarpsrathore@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "guzzlehttp/guzzle": "^7.0",
+        "graham-campbell/guzzle-factory": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DropbpxAPI\\": "src"
+        }
+    }
+}

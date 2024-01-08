@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace DropboxAPI;
 
-use GrahamCampbell\GuzzleFactory\GuzzleFactory;
-use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
+use GrahamCampbell\GuzzleFactory\GuzzleFactory;
 
 class Request {
 
@@ -19,20 +19,15 @@ class Request {
     protected ClientInterface $client;
 
     protected array $lastResponse = [];
-    protected array $options = [
-        'curl_options' => []
-    ];
 
     /**
      * Constructor
-     * Set options.
+     * Set client.
      *
-     * @param array|object $options Optional. Options to set.
+     * @param ClientInterface $client Optional. Client to set.
      */
-    public function __construct(ClientInterface $client = null, array|object $options = []) {
-        $this->setOptions($options);
-
-        $this->client = $client ?? new GuzzleClient(['handler' => GuzzleFactory::handler()]);
+    public function __construct(ClientInterface $client = null) {
+        $this->client = $client ?? new Client(['handler' => GuzzleFactory::handler()]);
     }
 
     /**
@@ -51,12 +46,6 @@ class Request {
         $error = $parsedBody->error ?? null;
         $error_tag = !empty($error->{'.tag'}) ? $error->{'.tag'} : null;
         $error_summary = $parsedBody->error_summary ?? null;
-
-        echo '<pre>';
-        print_r($parsedBody);
-        echo '<br>';
-        print_r($body);
-        echo '</pre>';
 
         $user_message = $parsedBody->user_message ?? null;
         if (!empty($user_message)) {
@@ -206,19 +195,6 @@ class Request {
         ];
 
         return $this->lastResponse;
-    }
-
-    /**
-     * Set options
-     *
-     * @param array|object $options Options to set.
-     *
-     * @return self
-     */
-    public function setOptions(array|object $options): self {
-        $this->options = array_merge($this->options, (array) $options);
-
-        return $this;
     }
 
     /**

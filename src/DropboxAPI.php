@@ -368,6 +368,35 @@ class DropboxAPI {
         return ($path === '') ? '' : '/' . $path;
     }
 
+    public function getUserAccount(string $account_id): array {
+        $uri = '/users/get_account';
+
+        $parameters = [
+            'account_id' => $account_id
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Get information about the current user's account.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#users-get_current_account
+     * 
+     * @return array
+     */
+    public function getCurrentAccount(): array {
+        $uri = '/users/get_current_account';
+
+        $headers = $this->apiHeaders();
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, [], $headers);
+
+        return $this->lastResponse['body'];
+    }
+
     /**
      * Create a new file with the contents provided in the request.
      *

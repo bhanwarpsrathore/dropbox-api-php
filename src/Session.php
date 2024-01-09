@@ -6,13 +6,17 @@ namespace DropboxAPI;
 
 class Session {
 
-    protected string $accessToken = '';
     protected string $clientId = '';
     protected string $clientSecret = '';
-    protected int $expirationTime = 0;
     protected string $redirectUri = '';
+    protected string $accessToken = '';
     protected string $refreshToken = '';
+    protected int $expirationTime = 0;
     protected string $scope = '';
+    protected string $account_id = '';
+    protected string $team_id = '';
+    protected string $id_token = '';
+
     protected ?Request $request = null;
 
     /**
@@ -129,15 +133,6 @@ class Session {
     }
 
     /**
-     * Get the access token.
-     *
-     * @return string The access token.
-     */
-    public function getAccessToken(): string {
-        return $this->accessToken;
-    }
-
-    /**
      * Get the client ID.
      *
      * @return string The client ID.
@@ -156,21 +151,21 @@ class Session {
     }
 
     /**
-     * Get the access token expiration time.
-     *
-     * @return int A Unix timestamp indicating the token expiration time.
-     */
-    public function getTokenExpiration(): int {
-        return $this->expirationTime;
-    }
-
-    /**
      * Get the client's redirect URI.
      *
      * @return string The redirect URI.
      */
     public function getRedirectUri(): string {
         return $this->redirectUri;
+    }
+
+    /**
+     * Get the access token.
+     *
+     * @return string The access token.
+     */
+    public function getAccessToken(): string {
+        return $this->accessToken;
     }
 
     /**
@@ -183,12 +178,48 @@ class Session {
     }
 
     /**
+     * Get the access token expiration time.
+     *
+     * @return int A Unix timestamp indicating the token expiration time.
+     */
+    public function getTokenExpiration(): int {
+        return $this->expirationTime;
+    }
+
+    /**
      * Get the scope for the current access token
      *
      * @return array The scope for the current access token
      */
     public function getScope(): array {
         return explode(' ', $this->scope);
+    }
+
+    /**
+     * Get the account ID for the current access token
+     * 
+     * @return string The account ID for the current access token
+     */
+    public function getAccountId(): string {
+        return $this->account_id;
+    }
+
+    /**
+     * Get the team ID for the current access token
+     * 
+     * @return string The team ID for the current access token
+     */
+    public function getTeamId(): string {
+        return $this->team_id;
+    }
+
+    /**
+     * Get the ID token for the current access token
+     * 
+     * @return string The ID token for the current access token
+     */
+    public function getIdToken(): string {
+        return $this->id_token;
     }
 
     /**
@@ -257,11 +288,14 @@ class Session {
             'form_params' => $parameters
         ]);
 
-        if (isset($response->access_token)) {
-            $this->refreshToken = isset($response->refresh_token) ? $response->refresh_token : '';
-            $this->accessToken = $response->access_token;
-            $this->expirationTime = time() + $response->expires_in;
-            $this->scope = $response->scope ?? $this->scope;
+        if (isset($response['access_token'])) {
+            $this->accessToken = $response["access_token"];
+            $this->refreshToken = isset($response["refresh_token"]) ? $response["refresh_token"] : '';
+            $this->expirationTime = time() + $response["expires_in"];
+            $this->scope = isset($response["scope"]) ? $response["scope"] : '';
+            $this->account_id = isset($response["account_id"]) ? $response["account_id"] : '';
+            $this->team_id = isset($response["team_id"]) ? $response["team_id"] : '';
+            $this->id_token = isset($response["id_token"]) ? $response["id_token"] : '';
 
             return true;
         }

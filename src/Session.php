@@ -244,14 +244,12 @@ class Session {
             'form_params' => $parameters
         ]);
 
-        if (isset($response->access_token)) {
-            $this->accessToken = $response->access_token;
-            $this->expirationTime = time() + $response->expires_in;
-            $this->scope = $response->scope ?? $this->scope;
+        if (isset($response["access_token"])) {
+            $this->accessToken = $response["access_token"];
+            $this->expirationTime = time() + $response["expires_in"];
+            $this->scope = isset($response["scope"]) ? $response["scope"] : $this->scope;
 
-            if (isset($response->refresh_token)) {
-                $this->refreshToken = $response->refresh_token;
-            } elseif (empty($this->refreshToken)) {
+            if (empty($this->refreshToken)) {
                 $this->refreshToken = $refreshToken;
             }
 

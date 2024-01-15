@@ -133,7 +133,7 @@ class Request {
      * @throws DropboxAPIAuthException
      *
      * @return array Response data.
-     * - array body The response body.
+     * - array|StreamInterface body The response body.
      * - array headers Response headers.
      * - int status HTTP status code.
      * - string url The requested URL.

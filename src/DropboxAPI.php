@@ -412,6 +412,8 @@ class DropboxAPI {
             return $this->uploadChunked($path, $contents, $mode);
         }
 
+        $headers = $this->apiHeaders();
+
         $arguments = [
             'autorename' => $autorename,
             'mode' => $mode,
@@ -419,7 +421,7 @@ class DropboxAPI {
         ];
 
         $uri = '/files/upload';
-        $this->lastResponse = $this->contentEndpointRequest('POST', $uri, $arguments, $contents);
+        $this->lastResponse = $this->contentEndpointRequest('POST', $uri, $arguments, $contents, [], $headers);
 
         return $this->lastResponse['body'];
     }
@@ -495,9 +497,11 @@ class DropboxAPI {
      * @param  string|resource|StreamInterface  $contents
      */
     public function uploadSessionStart(mixed $contents, bool $close = false): UploadSessionCursor {
+        $headers = $this->apiHeaders();
+
         $arguments = compact('close');
 
-        ['body' => $response] = $this->contentEndpointRequest('POST', '/files/upload_session/start', $arguments, $contents);
+        ['body' => $response] = $this->contentEndpointRequest('POST', '/files/upload_session/start', $arguments, $contents, [], $headers);
 
         return new UploadSessionCursor($response['session_id'], ($contents instanceof StreamInterface ? $contents->tell() : strlen($contents)));
     }
@@ -510,10 +514,12 @@ class DropboxAPI {
      * @link https://www.dropbox.com/developers/documentation/http/documentation#files-upload_session-append_v2
      */
     public function uploadSessionAppend(string|StreamInterface $contents, UploadSessionCursor $cursor, bool $close = false): UploadSessionCursor {
+        $headers = $this->apiHeaders();
+
         $arguments = compact('cursor', 'close');
 
         $pos = $contents instanceof StreamInterface ? $contents->tell() : 0;
-        $this->contentEndpointRequest('POST', '/files/upload_session/append_v2', $arguments, $contents);
+        $this->contentEndpointRequest('POST', '/files/upload_session/append_v2', $arguments, $contents, [], $headers);
 
         $cursor->offset += $contents instanceof StreamInterface ? ($contents->tell() - $pos) : strlen($contents);
 
@@ -532,6 +538,8 @@ class DropboxAPI {
     public function uploadSessionFinish(mixed $contents, UploadSessionCursor $cursor, string $path, string $mode = 'add', bool $autorename = false, bool $mute = false): array {
         $path = $this->normalizePath($path);
 
+        $headers = $this->apiHeaders();
+
         $arguments = compact('cursor');
         $arguments['commit'] = compact('path', 'mode', 'autorename', 'mute');
 
@@ -539,7 +547,9 @@ class DropboxAPI {
             'POST',
             '/files/upload_session/finish',
             $arguments,
-            ($contents == '') ? null : $contents
+            ($contents == '') ? null : $contents,
+            [],
+            $headers
         );
     }
 

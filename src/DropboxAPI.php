@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DropboxAPI;
 
 use GuzzleHttp\Psr7;
+use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\PumpStream;
 use Psr\Http\Message\StreamInterface;
 
@@ -663,7 +664,7 @@ class DropboxAPI {
      * @param string $path
      * @return array
      */
-    public function download(string $path): array {
+    public function download(string $path): Stream {
         $uri = '/files/download';
 
         $headers = $this->apiHeaders();
@@ -685,7 +686,7 @@ class DropboxAPI {
      * @param string $path
      * @return array
      */
-    public function downloadZip(string $path): array {
+    public function downloadZip(string $path): Stream {
         $uri = '/files/download_zip';
 
         $arguments = [

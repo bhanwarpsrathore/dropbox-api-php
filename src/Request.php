@@ -182,10 +182,13 @@ class Request {
             $this->handleResponseError($exception->getResponse()->getBody()->getContents(), $exception->getResponse()->getStatusCode());
         }
 
-        $body = $response->getBody()->getContents();
-        $parsedBody = json_decode($body, true);
+        $body = $parsedBody = $response->getBody();
         $status = $response->getStatusCode();
         $parsedHeaders = $response->getHeaders();
+
+        if (in_array('application/json', $response->getHeader('Content-Type'))) {
+            $parsedBody = json_decode($body->getContents(), true);
+        }
 
         $this->lastResponse = [
             'body' => $parsedBody,
@@ -195,34 +198,5 @@ class Request {
         ];
 
         return $this->lastResponse;
-    }
-
-    /**
-     * Split response into headers and body, taking proxy response headers etc. into account.
-     *
-     * @param string $response The complete response.
-     *
-     * @return array An array consisting of two elements, headers and body.
-     */
-    protected function splitResponse(string $response): array {
-        $response = str_replace("\r\n", "\n", $response);
-        $parts = explode("\n\n", $response, 3);
-
-        // Skip first set of headers for proxied requests etc.
-        if (
-            preg_match('/^HTTP\/1.\d 100 Continue/', $parts[0]) ||
-            preg_match('/^HTTP\/1.\d 200 Connection established/', $parts[0]) ||
-            preg_match('/^HTTP\/1.\d 200 Tunnel established/', $parts[0])
-        ) {
-            return [
-                $parts[1],
-                $parts[2],
-            ];
-        }
-
-        return [
-            $parts[0],
-            $parts[1],
-        ];
     }
 }

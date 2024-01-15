@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace DropboxAPI;
 
 use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\PumpStream;
 use Psr\Http\Message\StreamInterface;
 
@@ -259,7 +258,7 @@ class DropboxAPI {
      * @throws DropboxAPIAuthException
      *
      * @return array Response data.
-     * - array body The response body.
+     * - array|StreamInterface body The response body.
      * - array headers Response headers.
      * - int status HTTP status code.
      * - string url The requested URL.
@@ -662,9 +661,9 @@ class DropboxAPI {
      * @link https://www.dropbox.com/developers/documentation/http/documentation#files-download
      * 
      * @param string $path
-     * @return array
+     * @return StreamInterface
      */
-    public function download(string $path): Stream {
+    public function download(string $path): StreamInterface {
         $uri = '/files/download';
 
         $headers = $this->apiHeaders();
@@ -684,9 +683,9 @@ class DropboxAPI {
      * @link https://www.dropbox.com/developers/documentation/http/documentation#files-download_zip
      * 
      * @param string $path
-     * @return array
+     * @return StreamInterface
      */
-    public function downloadZip(string $path): Stream {
+    public function downloadZip(string $path): StreamInterface {
         $uri = '/files/download_zip';
 
         $arguments = [

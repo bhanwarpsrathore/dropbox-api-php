@@ -159,14 +159,16 @@ class DropboxAPI {
      * 
      * @param bool $team_member_id Optional. Set to false to not include the team member id header.
      * @param bool $namespace_id Optional. Set to false to not include the namespace id header.
+     * @param string $member_type Optional. The member type. Default is 'admin'.
      * 
      * @return array API headers.
      */
-    protected function apiHeaders(bool $team_member_id = true, bool $namespace_id = true): array {
+    protected function apiHeaders(bool $team_member_id = true, bool $namespace_id = true, string $member_type = 'admin'): array {
         $headers = [];
 
         if ($this->teamMemberId && $team_member_id) {
-            $headers['Dropbox-API-Select-Admin'] = $this->teamMemberId;
+            $header_key = $member_type === 'admin' ? 'Dropbox-API-Select-Admin' : 'Dropbox-API-Select-User';
+            $headers[$header_key] = $this->teamMemberId;
         }
 
         if ($this->namespaceId && $namespace_id) {
@@ -688,11 +690,13 @@ class DropboxAPI {
     public function downloadZip(string $path): StreamInterface {
         $uri = '/files/download_zip';
 
+        $headers = $this->apiHeaders(true, true, 'user');
+
         $arguments = [
             'path' => $this->normalizePath($path)
         ];
 
-        $this->lastResponse = $this->contentEndpointRequest('POST', $uri, $arguments);
+        $this->lastResponse = $this->contentEndpointRequest('POST', $uri, $arguments, '', [], $headers);
 
         return $this->lastResponse['body'];
     }

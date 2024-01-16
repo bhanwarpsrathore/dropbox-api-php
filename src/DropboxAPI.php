@@ -733,6 +733,34 @@ class DropboxAPI {
     }
 
     /**
+     * Returns the metadata for a file or folder. Note: Metadata for the root folder is unsupported.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-get_metadata
+     * 
+     * @param string $path
+     * @param bool $include_media_info Optional
+     * @param bool $include_deleted Optional
+     * @param bool $include_has_explicit_shared_members Optional
+     * @return array
+     */
+    public function metaData(string $path, bool $include_media_info = false, bool $include_deleted = false, bool $include_has_explicit_shared_members = false): array {
+        $uri = '/files/get_metadata';
+
+        $headers = $this->apiHeaders();
+
+        $parameters = [
+            'path' => $this->normalizePath($path),
+            'include_media_info' => $include_media_info,
+            'include_deleted' => $include_deleted,
+            'include_has_explicit_shared_members' => $include_has_explicit_shared_members
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Lists members of a team.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/teams#team-members-list

@@ -803,6 +803,36 @@ class DropboxAPI {
     }
 
     /**
+     * List shared links of this user. If no path is given, returns a list of all shared links for the current user. For members of business teams using team space and member folders, returns all shared links in the team member's home folder unless the team space ID is specified in the request header.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#sharing-list_shared_links
+     * 
+     * @param string $path Optional
+     * @param string $cursor Optional
+     * @param bool $direct_only Optional
+     * @return array
+     */
+    public function listSharedLinks(string $path = null, string $cursor = null, bool $direct_only = true): array {
+        $uri = '/sharing/list_shared_links';
+
+        $headers = $this->apiHeaders(true, true, 'user');
+
+        $parameters = [
+            'direct_only' => $direct_only
+        ];
+        if ($path) {
+            $parameters['path'] = $path;
+        }
+        if ($cursor) {
+            $parameters['cursor'] = $cursor;
+        }
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Lists members of a team.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/teams#team-members-list

@@ -765,6 +765,44 @@ class DropboxAPI {
     }
 
     /**
+     * Create a shared link with custom settings. If no settings are given then the default visibility is RequestedVisibility.public 
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#sharing-create_shared_link_with_settings
+     * 
+     * @param string $path
+     * @param array $settings Optional
+     * @return array
+     */
+    public function createSharedLink(string $path, array $settings = []): array {
+        $uri = '/sharing/create_shared_link_with_settings';
+
+        $headers = $this->apiHeaders();
+
+        $parameters = [
+            'path' => $path
+        ];
+
+        $parameter_settings = [];
+        $keys = ['require_password', 'expires',  'audience',  'access',   'allow_download'];
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $settings)) {
+                $parameter_settings[$key] = $settings[$key];
+                if ($key == 'require_password' && array_key_exists('link_password', $settings)) {
+                    $parameter_settings['link_password'] = $settings['link_password'];
+                }
+            }
+        }
+
+        if (count($parameter_settings) > 0) {
+            $parameters['settings'] = $parameter_settings;
+        }
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Lists members of a team.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/teams#team-members-list

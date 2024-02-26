@@ -163,15 +163,15 @@ class DropboxAPI {
      * 
      * @return array API headers.
      */
-    protected function apiHeaders(bool $team_member_id = true, bool $namespace_id = true, string $member_type = 'admin'): array {
+    protected function apiHeaders(string $member_type = 'admin'): array {
         $headers = [];
 
-        if ($this->teamMemberId && $team_member_id) {
+        if ($this->teamMemberId) {
             $header_key = $member_type === 'admin' ? 'Dropbox-API-Select-Admin' : 'Dropbox-API-Select-User';
             $headers[$header_key] = $this->teamMemberId;
         }
 
-        if ($this->namespaceId && $namespace_id) {
+        if ($this->namespaceId) {
             $headers['Dropbox-API-Path-Root'] = json_encode([
                 '.tag' => 'namespace_id',
                 'namespace_id' => $this->namespaceId,
@@ -580,6 +580,58 @@ class DropboxAPI {
     }
 
     /**
+     * Create multiple folders at once. This route is asynchronous for large batches, which returns a job ID immediately and runs the create folder batch asynchronously. Otherwise, creates the folders and returns the result synchronously for smaller inputs.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-create_folder_batch
+     * 
+     * @param array $paths
+     * @param bool $autorename Optional
+     * @param bool $force_async Optional
+     * @return array
+     */
+    public function createFolderBatch(array $paths, bool $autorename = false, bool $force_async = false): array {
+        $uri = '/files/create_folder_batch';
+
+        $headers = $this->apiHeaders();
+
+        foreach ($paths as &$path) {
+            $path = $this->normalizePath($path);
+        }
+
+        $parameters = [
+            'autorename' => $autorename,
+            'force_async' => $force_async,
+            'paths' => $paths
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Returns the status of an asynchronous job for createFolderBatch. If success, it returns list of result for each entry.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-create_folder_batch-check
+     * 
+     * @param string $async_job_id
+     * @return array
+     */
+    public function createFolderBatchCheck(string $async_job_id): array {
+        $uri = '/files/create_folder_batch/check';
+
+        $headers = $this->apiHeaders();
+
+        $parameters = [
+            'async_job_id' => $async_job_id
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Copy a file or folder to a different location in the user's Dropbox. If the source path is a folder all its contents will be copied.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/documentation#files-copy
@@ -600,6 +652,56 @@ class DropboxAPI {
             'autorename' => $autorename,
             'from_path' => $this->normalizePath($from_path),
             'to_path' => $this->normalizePath($to_path)
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Copy multiple files or folders to different locations at once in the user's Dropbox.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-copy_batch
+     * 
+     * @param array $entries
+     * @param bool $autorename Optional
+     * @return array
+     */
+    public function copyBatch(array $entries, bool $autorename = false): array {
+        $uri = '/files/copy_batch_v2';
+
+        $headers = $this->apiHeaders();
+
+        foreach ($entries as &$entry) {
+            $entry['from_path'] = $this->normalizePath($entry['from_path']);
+            $entry['to_path'] = $this->normalizePath($entry['to_path']);
+        }
+
+        $parameters = [
+            'autorename' => $autorename,
+            'entries' => $entries
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Returns the status of an asynchronous job for copyBatch. It returns list of results for each entry.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-copy_batch-check
+     * 
+     * @param string $async_job_id
+     */
+    public function copyBatchCheck(string $async_job_id): array {
+        $uri = '/files/copy_batch/check_v2';
+
+        $headers = $this->apiHeaders();
+
+        $parameters = [
+            'async_job_id' => $async_job_id
         ];
 
         $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
@@ -658,6 +760,54 @@ class DropboxAPI {
     }
 
     /**
+     * Delete multiple files/folders at once. This route is asynchronous, which returns a job ID immediately and runs the delete batch asynchronously.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-delete_batch
+     * 
+     * @param array $entries
+     * @return array
+     */
+    public function deleteBatch(array $entries): array {
+        $uri = '/files/delete_batch';
+
+        $headers = $this->apiHeaders();
+
+        foreach ($entries as &$entry) {
+            $entry['path'] = $this->normalizePath($entry['path']);
+        }
+
+        $parameters = [
+            'entries' => $entries
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Returns the status of an asynchronous job for deleteBatch. If success, it returns list of result for each entry.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-delete_batch-check
+     *
+     * @param string $async_job_id
+     * @return array
+     */
+    public function deleteBatchCheck(string $async_job_id): array {
+        $uri = '/files/delete_batch/check';
+
+        $headers = $this->apiHeaders();
+
+        $parameters = [
+            'async_job_id' => $async_job_id
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Download a file from a user's Dropbox.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/documentation#files-download
@@ -690,7 +840,7 @@ class DropboxAPI {
     public function downloadZip(string $path): StreamInterface {
         $uri = '/files/download_zip';
 
-        $headers = $this->apiHeaders(true, true, 'user');
+        $headers = $this->apiHeaders('user');
 
         $arguments = [
             'path' => $this->normalizePath($path)
@@ -815,7 +965,7 @@ class DropboxAPI {
     public function listSharedLinks(string $path = null, string $cursor = null, bool $direct_only = true): array {
         $uri = '/sharing/list_shared_links';
 
-        $headers = $this->apiHeaders(true, true, 'user');
+        $headers = $this->apiHeaders('user');
 
         $parameters = [
             'direct_only' => $direct_only
@@ -830,6 +980,41 @@ class DropboxAPI {
         $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
 
         return $this->lastResponse['body'];
+    }
+
+    /**
+     * Removes all manually added contacts. You'll still keep contacts who are on your team or who you imported. New contacts will be added when you share.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#contacts-delete_manual_contacts
+     * 
+     * @return bool
+     */
+    public function deleteManualContacts(): bool {
+        $uri = '/contacts/delete_manual_contacts';
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri);
+
+        return $this->lastResponse['status'] == 200;
+    }
+
+    /**
+     * Removes manually added contacts from the given list.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#contacts-delete_manual_contacts_batch
+     * 
+     * @param array $email_addresses
+     * @return bool
+     */
+    public function deleteManualContactsBatch(array $email_addresses): bool {
+        $uri = '/contacts/delete_manual_contacts_batch';
+
+        $parameters = [
+            'email_addresses' => $email_addresses
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters);
+
+        return $this->lastResponse['status'] == 200;
     }
 
     /**

@@ -580,6 +580,58 @@ class DropboxAPI {
     }
 
     /**
+     * Create multiple folders at once. This route is asynchronous for large batches, which returns a job ID immediately and runs the create folder batch asynchronously. Otherwise, creates the folders and returns the result synchronously for smaller inputs.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-create_folder_batch
+     * 
+     * @param array $paths
+     * @param bool $autorename Optional
+     * @param bool $force_async Optional
+     * @return array
+     */
+    public function createFolderBatch(array $paths, bool $autorename = false, bool $force_async = false): array {
+        $uri = '/files/create_folder_batch';
+
+        $headers = $this->apiHeaders();
+
+        foreach ($paths as &$path) {
+            $path = $this->normalizePath($path);
+        }
+
+        $parameters = [
+            'autorename' => $autorename,
+            'force_async' => $force_async,
+            'paths' => $paths
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Returns the status of an asynchronous job for createFolderBatch. If success, it returns list of result for each entry.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-create_folder_batch-check
+     * 
+     * @param string $async_job_id
+     * @return array
+     */
+    public function createFolderBatchCheck(string $async_job_id): array {
+        $uri = '/files/create_folder_batch/check';
+
+        $headers = $this->apiHeaders();
+
+        $parameters = [
+            'async_job_id' => $async_job_id
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Copy a file or folder to a different location in the user's Dropbox. If the source path is a folder all its contents will be copied.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/documentation#files-copy
@@ -700,6 +752,54 @@ class DropboxAPI {
 
         $parameters = [
             'path' => $this->normalizePath($path)
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Delete multiple files/folders at once. This route is asynchronous, which returns a job ID immediately and runs the delete batch asynchronously.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-delete_batch
+     * 
+     * @param array $entries
+     * @return array
+     */
+    public function deleteBatch(array $entries): array {
+        $uri = '/files/delete_batch';
+
+        $headers = $this->apiHeaders();
+
+        foreach ($entries as &$entry) {
+            $entry['path'] = $this->normalizePath($entry['path']);
+        }
+
+        $parameters = [
+            'entries' => $entries
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Returns the status of an asynchronous job for deleteBatch. If success, it returns list of result for each entry.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-delete_batch-check
+     *
+     * @param string $async_job_id
+     * @return array
+     */
+    public function deleteBatchCheck(string $async_job_id): array {
+        $uri = '/files/delete_batch/check';
+
+        $headers = $this->apiHeaders();
+
+        $parameters = [
+            'async_job_id' => $async_job_id
         ];
 
         $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);

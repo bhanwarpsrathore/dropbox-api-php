@@ -833,6 +833,41 @@ class DropboxAPI {
     }
 
     /**
+     * Removes all manually added contacts. You'll still keep contacts who are on your team or who you imported. New contacts will be added when you share.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#contacts-delete_manual_contacts
+     * 
+     * @return bool
+     */
+    public function deleteManualContacts(): bool {
+        $uri = '/contacts/delete_manual_contacts';
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri);
+
+        return $this->lastResponse['status'] == 200;
+    }
+
+    /**
+     * Removes manually added contacts from the given list.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#contacts-delete_manual_contacts_batch
+     * 
+     * @param array $email_addresses
+     * @return bool
+     */
+    public function deleteManualContactsBatch(array $email_addresses): bool {
+        $uri = '/contacts/delete_manual_contacts_batch';
+
+        $parameters = [
+            'email_addresses' => $email_addresses
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters);
+
+        return $this->lastResponse['status'] == 200;
+    }
+
+    /**
      * Lists members of a team.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/teams#team-members-list

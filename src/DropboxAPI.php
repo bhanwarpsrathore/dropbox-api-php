@@ -163,15 +163,15 @@ class DropboxAPI {
      * 
      * @return array API headers.
      */
-    protected function apiHeaders(bool $team_member_id = true, bool $namespace_id = true, string $member_type = 'admin'): array {
+    protected function apiHeaders(string $member_type = 'admin'): array {
         $headers = [];
 
-        if ($this->teamMemberId && $team_member_id) {
+        if ($this->teamMemberId) {
             $header_key = $member_type === 'admin' ? 'Dropbox-API-Select-Admin' : 'Dropbox-API-Select-User';
             $headers[$header_key] = $this->teamMemberId;
         }
 
-        if ($this->namespaceId && $namespace_id) {
+        if ($this->namespaceId) {
             $headers['Dropbox-API-Path-Root'] = json_encode([
                 '.tag' => 'namespace_id',
                 'namespace_id' => $this->namespaceId,
@@ -690,7 +690,7 @@ class DropboxAPI {
     public function downloadZip(string $path): StreamInterface {
         $uri = '/files/download_zip';
 
-        $headers = $this->apiHeaders(true, true, 'user');
+        $headers = $this->apiHeaders('user');
 
         $arguments = [
             'path' => $this->normalizePath($path)
@@ -815,7 +815,7 @@ class DropboxAPI {
     public function listSharedLinks(string $path = null, string $cursor = null, bool $direct_only = true): array {
         $uri = '/sharing/list_shared_links';
 
-        $headers = $this->apiHeaders(true, true, 'user');
+        $headers = $this->apiHeaders('user');
 
         $parameters = [
             'direct_only' => $direct_only

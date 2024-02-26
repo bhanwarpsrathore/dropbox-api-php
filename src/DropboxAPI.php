@@ -608,6 +608,56 @@ class DropboxAPI {
     }
 
     /**
+     * Copy multiple files or folders to different locations at once in the user's Dropbox.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-copy_batch
+     * 
+     * @param array $entries
+     * @param bool $autorename Optional
+     * @return array
+     */
+    public function copyBatch(array $entries, bool $autorename = false): array {
+        $uri = '/files/copy_batch_v2';
+
+        $headers = $this->apiHeaders();
+
+        foreach ($entries as &$entry) {
+            $entry['from_path'] = $this->normalizePath($entry['from_path']);
+            $entry['to_path'] = $this->normalizePath($entry['to_path']);
+        }
+
+        $parameters = [
+            'autorename' => $autorename,
+            'entries' => $entries
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Returns the status of an asynchronous job for copyBatch. It returns list of results for each entry.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-copy_batch-check
+     * 
+     * @param string $async_job_id
+     */
+    public function copyBatchCheck(string $async_job_id): array {
+        $uri = '/files/copy_batch/check_v2';
+
+        $headers = $this->apiHeaders();
+
+        $parameters = [
+            'async_job_id' => $async_job_id
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Move a file or folder to a different location in the user's Dropbox. If the source path is a folder all its contents will be moved. Note that we do not currently support case-only renaming.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/documentation#files-move

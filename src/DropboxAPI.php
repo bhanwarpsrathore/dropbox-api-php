@@ -937,6 +937,58 @@ class DropboxAPI {
     }
 
     /**
+     * Get a temporary link to stream content of a file. This link will expire in four hours and afterwards you will get 410 Gone. This URL should not be used to display content directly in the browser. The Content-Type of the link is determined automatically by the file's mime type.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-get_temporary_link
+     * 
+     * @param string $path
+     * @return array
+     */
+    public function temporaryLink(string $path): array {
+        $uri = '/files/get_temporary_link';
+
+        $parameters = [
+            'path' => $this->normalizePath($path)
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Get a one-time use temporary upload link to upload a file to a Dropbox location.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-get_temporary_upload_link
+     * 
+     * @param string $path
+     * @param float $duration Optional
+     * @param string $mode Optional
+     * @param bool $autorename Optional
+     * @param bool $mute Optional
+     * @param bool $strict_conflict Optional
+     * @return array
+     */
+    public function temporaryUploadLink(string $path, float $duration = 14000, string $mode = 'add', bool $autorename = false, bool $mute = false, bool $strict_conflict = false): array {
+        $uri = '/files/get_temporary_upload_link';
+
+        $parameters = [
+            'commit_info' => [
+                'autorename' => $autorename,
+                'mode' => $mode,
+                'mute' => $mute,
+                'path' => $this->normalizePath($path),
+                'strict_conflict' => $strict_conflict
+            ],
+            'duration' => $duration
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Create a shared link with custom settings. If no settings are given then the default visibility is RequestedVisibility.public 
      * 
      * @link https://www.dropbox.com/developers/documentation/http/documentation#sharing-create_shared_link_with_settings

@@ -915,6 +915,28 @@ class DropboxAPI {
     }
 
     /**
+     * Get a preview for a file. Currently, PDF previews are generated for files with the following extensions: .ai, .doc, .docm, .docx, .eps, .gdoc, .gslides, .odp, .odt, .pps, .ppsm, .ppsx, .ppt, .pptm, .pptx, .rtf. HTML previews are generated for files with the following extensions: .csv, .ods, .xls, .xlsm, .gsheet, .xlsx. Other formats will return an unsupported extension error.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-get_preview
+     * 
+     * @param string $path
+     * @return StreamInterface
+     */
+    public function preview(string $path): StreamInterface {
+        $uri = '/files/get_preview';
+
+        $headers = $this->apiHeaders();
+
+        $arguments = [
+            'path' => $this->normalizePath($path)
+        ];
+
+        $this->lastResponse = $this->contentEndpointRequest('POST', $uri, $arguments, '', [], $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Create a shared link with custom settings. If no settings are given then the default visibility is RequestedVisibility.public 
      * 
      * @link https://www.dropbox.com/developers/documentation/http/documentation#sharing-create_shared_link_with_settings

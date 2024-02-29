@@ -937,6 +937,64 @@ class DropboxAPI {
     }
 
     /**
+     * Get a thumbnail for an image. This method currently supports files with the following file extensions: jpg, jpeg, png, tiff, tif, gif, webp, ppm and bmp. Photos that are larger than 20MB in size won't be converted to a thumbnail.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-get_thumbnail
+     * 
+     * @param string $path
+     * @param string $format Optional
+     * @param string $size Optional
+     * @param string $mode Optional
+     * @return StreamInterface
+     */
+    public function thumbnail(string $path, string $format = 'jpeg', string $size = 'w64h64', string $mode = 'strict'): StreamInterface {
+        $uri = '/files/get_thumbnail_v2';
+
+        $headers = $this->apiHeaders();
+
+        $arguments = [
+            'format' => $format,
+            'mode' => $mode,
+            'size' => $size,
+            'resource' => [
+                '.tag' => 'path',
+                'path' => $this->normalizePath($path)
+            ],
+            'quality' => 'quality_80'
+        ];
+
+        $this->lastResponse = $this->contentEndpointRequest('POST', $uri, $arguments, '', [], $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
+     * Get thumbnails for a list of images. We allow up to 25 thumbnails in a single batch. This method currently supports files with the following file extensions: jpg, jpeg, png, tiff, tif, gif, webp, ppm and bmp. Photos that are larger than 20MB in size won't be converted to a thumbnail.
+     * 
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#files-get_thumbnail_batch
+     * 
+     * @param array $entries
+     * @return array
+     */
+    public function thumbnailBatch(array $entries) {
+        $uri = '/files/get_thumbnail_batch';
+
+        $headers = $this->apiHeaders();
+
+        foreach ($entries as &$entry) {
+            $entry['path'] = $this->normalizePath($entry['path']);
+        }
+
+        $parameters = [
+            'entries' => $entries
+        ];
+
+        $this->lastResponse = $this->rpcEndpointRequest('POST', $uri, $parameters, $headers);
+
+        return $this->lastResponse['body'];
+    }
+
+    /**
      * Get a temporary link to stream content of a file. This link will expire in four hours and afterwards you will get 410 Gone. This URL should not be used to display content directly in the browser. The Content-Type of the link is determined automatically by the file's mime type.
      * 
      * @link https://www.dropbox.com/developers/documentation/http/documentation#files-get_temporary_link
